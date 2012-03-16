@@ -48,6 +48,10 @@
 #define kIASKKeyboardNumberPad                @"NumberPad"
 #define kIASKKeyboardDecimalPad               @"DecimalPad"
 
+#define kIASKHWSpec                           @"hardware"
+
+
+
 #define KIASKKeyboardURL                      @"URL"
 #define kIASKKeyboardEmailAddress             @"EmailAddress"
 #define kIASKAutoCapNone                      @"None"

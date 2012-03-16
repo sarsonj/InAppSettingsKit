@@ -14,6 +14,7 @@
 //  This code is licensed under the BSD license that is available at: http://www.opensource.org/licenses/bsd-license.php
 //
 
+#import <CoreGraphics/CoreGraphics.h>
 #import "IASKSpecifierValuesViewController.h"
 #import "IASKSpecifier.h"
 #import "IASKSettingsReader.h"
@@ -155,6 +156,13 @@
 	@catch (NSException * e) {}
     return cell;
 }
+
+- (CGSize)contentSizeForViewInPopover {
+    NIDINFO(@"Size 2: %f,%f", self.view.size.width, self.view.size.height);
+    //return [[self view] sizeThatFits:CGSizeMake(320, 2000)];
+    return CGSizeMake(400, self.tableView.contentSize.height);
+}
+
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	

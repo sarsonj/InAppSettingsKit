@@ -15,6 +15,7 @@
 //
 
 
+#import <CoreGraphics/CoreGraphics.h>
 #import "IASKAppSettingsViewController.h"
 #import "IASKSettingsReader.h"
 #import "IASKSettingsStoreUserDefaults.h"
@@ -194,9 +195,12 @@ CGRect IASKCGRectSwap(CGRect rect);
 	[super viewWillAppear:animated];
 }
 
+
 - (CGSize)contentSizeForViewInPopover {
-    return [[self view] sizeThatFits:CGSizeMake(320, 2000)];
+    NIDINFO(@"Size: %f,%f", self.view.size.width, self.view.size.height);
+    return [[self view] sizeThatFits:CGSizeMake(400, 2000)];
 }
+
 
 - (void)viewDidAppear:(BOOL)animated {
 	[super viewDidAppear:animated];

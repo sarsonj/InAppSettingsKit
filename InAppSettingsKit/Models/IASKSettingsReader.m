@@ -14,14 +14,22 @@
 //	This code is licensed under the BSD license that is available at: http://www.opensource.org/licenses/bsd-license.php
 //
 
+#import <Foundation/Foundation.h>
 #import "IASKSettingsReader.h"
 #import "IASKSpecifier.h"
+#import "UIDevice+MKAdditions.h"
+
 
 @interface IASKSettingsReader (private)
 - (void)_reinterpretBundle:(NSDictionary*)settingsBundle;
 - (BOOL)_sectionHasHeading:(NSInteger)section;
 - (NSString *)platformSuffix;
 - (NSString *)locateSettingsFile:(NSString *)file;
+
+@end
+
+@interface IASKSettingsReader ()
+- (BOOL)supportsHw:(NSString*)hwSpec;
 
 @end
 
@@ -79,31 +87,56 @@ dataSource=_dataSource;
 	[super dealloc];
 }
 
+- (BOOL)supportsHw:(NSString*)hwSpec {
+    BOOL enabled = YES;
+    BOOL or =  [hwSpec rangeOfString:@"or"].location != NSNotFound;
+    if (hwSpec != nil) {
+        // only when camera available
+        if ([hwSpec rangeOfString:@"camera"].location != NSNotFound) {
+            enabled = [[UIDevice currentDevice] cameraAvailable];
+        }
+        // only on iPhone
+        if ((enabled || or) && [hwSpec rangeOfString:@"iPhone"].location != NSNotFound) {
+            enabled = !ISIPAD;
+        }
+    }
+    return enabled;
+
+}
+
 - (void)_reinterpretBundle:(NSDictionary*)settingsBundle {
 	NSArray *preferenceSpecifiers	= [settingsBundle objectForKey:kIASKPreferenceSpecifiers];
 	NSInteger sectionCount			= -1;
 	NSMutableArray *dataSource		= [[[NSMutableArray alloc] init] autorelease];
-	
+    BOOL skipSection = NO;
 	for (NSDictionary *specifier in preferenceSpecifiers) {
-		if ([(NSString*)[specifier objectForKey:kIASKType] isEqualToString:kIASKPSGroupSpecifier]) {
-			NSMutableArray *newArray = [[NSMutableArray alloc] init];
-			
-			[newArray addObject:specifier];
-			[dataSource addObject:newArray];
-			[newArray release];
-			sectionCount++;
+		if ([(NSString*)[specifier objectForKey:kIASKType] isEqualToString:kIASKPSGroupSpecifier] ) {
+            skipSection = ![self supportsHw:[specifier objectForKey:kIASKHWSpec]];
+            if (!skipSection) {
+                NSMutableArray *newArray = [[NSMutableArray alloc] init];
+                [newArray addObject:specifier];
+                [dataSource addObject:newArray];
+                [newArray release];
+                sectionCount++;
+            }
 		}
 		else {
-			if (sectionCount == -1) {
-				NSMutableArray *newArray = [[NSMutableArray alloc] init];
-				[dataSource addObject:newArray];
-				[newArray release];
-				sectionCount++;
-			}
+            if (!skipSection) {
+                BOOL skipSItem = ![self supportsHw:[specifier objectForKey:kIASKHWSpec]];
+                if (!skipSItem) {
+                    IASKSpecifier *newSpecifier = [[IASKSpecifier alloc] initWithSpecifier:specifier];
 
-			IASKSpecifier *newSpecifier = [[IASKSpecifier alloc] initWithSpecifier:specifier];
-			[(NSMutableArray*)[dataSource objectAtIndex:sectionCount] addObject:newSpecifier];
-			[newSpecifier release];
+                    if (sectionCount == -1) {
+                        NSMutableArray *newArray = [[NSMutableArray alloc] init];
+                        [dataSource addObject:newArray];
+                        [newArray release];
+                        sectionCount++;
+                    }
+
+                    [(NSMutableArray*)[dataSource objectAtIndex:sectionCount] addObject:newSpecifier];
+                    [newSpecifier release];
+                }
+            }
 		}
 	}
 	[self setDataSource:dataSource];
