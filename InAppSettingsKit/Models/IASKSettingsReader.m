@@ -142,6 +142,42 @@ dataSource=_dataSource;
 	[self setDataSource:dataSource];
 }
 
+/**
+* Initialize default values for this settings
+* Set them only if they are not included in defaults store
+*/
+-(void)setDefaultsForStore:(id<IASKSettingsStore>)store {
+    NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
+    Class boolClass = [[NSNumber numberWithBool:YES] class];
+    for (NSArray *items in self.dataSource) {
+        for (id val in items) {
+            if ([val isKindOfClass:[IASKSpecifier class]]) {
+                IASKSpecifier *specifier = val;
+                // if not in NSUserDefaults...
+                NSString *specifierKey = specifier.key;
+                if (specifierKey != nil && ![store objectForKey:specifier.key]) {
+                    if (specifier.defaultValue != nil) {
+                        // bool
+                        if ([specifier.defaultValue isKindOfClass:[boolClass class]]) {
+                            [store setBool:[specifier.defaultValue boolValue]  forKey:specifier.key];
+                        } else
+                        // int numbers
+                        if (([specifier.defaultValue isKindOfClass:[NSNumber class]])) {
+                            [store setInteger:[specifier.defaultValue intValue] forKey:specifier.key];
+                        } else {
+                            [store setObject: specifier.defaultValue forKey:specifier.key];
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+    [numberFormatter release];
+}
+
+
+
 - (BOOL)_sectionHasHeading:(NSInteger)section {
 	return [[[[self dataSource] objectAtIndex:section] objectAtIndex:0] isKindOfClass:[NSDictionary class]];
 }

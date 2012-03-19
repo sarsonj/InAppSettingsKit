@@ -15,6 +15,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "IASKSettingsStore.h"
 
 #define kIASKPreferenceSpecifiers             @"PreferenceSpecifiers"
 #define kIASKType                             @"Type"
@@ -128,6 +129,9 @@ __VA_ARGS__ \
 }
 
 - (id)initWithFile:(NSString*)file;
+
+- (void)setDefaultsForStore:(id <IASKSettingsStore>)store;
+
 - (NSInteger)numberOfSections;
 - (NSInteger)numberOfRowsForSection:(NSInteger)section;
 - (IASKSpecifier*)specifierForIndexPath:(NSIndexPath*)indexPath;
