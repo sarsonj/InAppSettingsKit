@@ -20,6 +20,13 @@
 @class IASKSpecifier;
 @class IASKSettingsReader;
 
+
+@protocol IASKSpecifierExtension
+    -(int)additionalSections;
+    -(int)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
+    -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+@end
+
 @interface IASKSpecifierValuesViewController : UIViewController<IASKViewController> {
     UITableView				*_tableView;
     
@@ -27,10 +34,12 @@
     NSIndexPath             *_checkedItem;
 	IASKSettingsReader		*_settingsReader;
     id<IASKSettingsStore>	_settingsStore;
+    id<IASKSpecifierExtension> _extension;
 }
 
 @property (nonatomic, retain) IBOutlet UITableView *tableView;
 @property (nonatomic, retain) NSIndexPath *checkedItem;
 @property (nonatomic, retain) IASKSpecifier *currentSpecifier;
+@property (nonatomic, retain) id<IASKSpecifierExtension> extension;
 
 @end

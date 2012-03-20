@@ -52,6 +52,9 @@
 - (UITextAutocorrectionType)autoCorrectionType;
 - (NSString*)footerText;
 - (Class)viewControllerClass;
+
+- (Class)specifierExtensionClass;
+
 - (SEL)viewControllerSelector;
 -(Class)buttonClass;
 -(SEL)buttonAction;

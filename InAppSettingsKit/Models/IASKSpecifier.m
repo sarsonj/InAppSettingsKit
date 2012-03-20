@@ -81,6 +81,11 @@
     return NSClassFromString([_specifierDict objectForKey:kIASKViewControllerClass]);
 }
 
+-(Class) specifierExtensionClass {
+    return NSClassFromString([_specifierDict objectForKey:kIASKSpecifierValuesExtensionClass]);
+}
+
+
 -(SEL) viewControllerSelector {
     return NSSelectorFromString([_specifierDict objectForKey:kIASKViewControllerSelector]);
 }

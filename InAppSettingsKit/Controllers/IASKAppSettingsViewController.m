@@ -558,9 +558,14 @@ CGRect IASKCGRectSwap(CGRect rect);
             [newItemDict setObject:targetViewController forKey:@"viewController"];
             [self.viewList replaceObjectAtIndex:kIASKSpecifierValuesViewControllerIndex withObject:newItemDict];
             [targetViewController release];
-            
+            Class extension = [specifier specifierExtensionClass];
             // load the view controll back in to push it
             targetViewController = [[self.viewList objectAtIndex:kIASKSpecifierValuesViewControllerIndex] objectForKey:@"viewController"];
+            if (extension != nil) {
+                id<IASKSpecifierExtension> extensionImpl = [[[extension alloc] init] autorelease];
+                targetViewController.extension = extensionImpl;
+            }
+
         }
         [targetViewController setCurrentSpecifier:specifier];
         targetViewController.settingsReader = self.settingsReader;

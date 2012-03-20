@@ -49,6 +49,9 @@
 #define kIASKKeyboardNumberPad                @"NumberPad"
 #define kIASKKeyboardDecimalPad               @"DecimalPad"
 
+#define kIASKSpecifierValuesExtensionClass    @"IASKSpecifierValuesExtensionClass"
+
+
 #define kIASKHWSpec                           @"hardware"
 
 

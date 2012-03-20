@@ -33,6 +33,8 @@
 @synthesize checkedItem=_checkedItem;
 @synthesize settingsReader = _settingsReader;
 @synthesize settingsStore = _settingsStore;
+@synthesize extension = _extension;
+
 
 - (void) updateCheckedItem {
     NSInteger index;
@@ -107,6 +109,7 @@
 	[_settingsReader release], _settingsReader = nil;
     [_settingsStore release], _settingsStore = nil;
 	[_tableView release], _tableView = nil;
+    [_extension release];
     [super dealloc];
 }
 
@@ -115,12 +118,19 @@
 #pragma mark UITableView delegates
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-	return 1;
+    int additional = (self.extension != nil && [self.extension respondsToSelector:@selector(additionalSections)])?
+            [self.extension additionalSections]:0;
+
+	return 1 + additional;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return [_currentSpecifier multipleValuesCount];
+    if (section == 0)
+        return [_currentSpecifier multipleValuesCount];
+    else
+        return [self.extension tableView:tableView numberOfRowsInSection:section];
 }
+
 
 - (void)selectCell:(UITableViewCell *)cell {
 	[cell setAccessoryType:UITableViewCellAccessoryCheckmark];
@@ -133,28 +143,37 @@
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForFooterInSection:(NSInteger)section {
-    return [_currentSpecifier footerText];
+    if (section == [self numberOfSectionsInTableView:tableView]-1) {
+        return [_currentSpecifier footerText];
+    } else {
+        return  nil;
+    }
+
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell   = [tableView dequeueReusableCellWithIdentifier:kCellValue];
-    NSArray *titles         = [_currentSpecifier multipleTitles];
-	
-    if (!cell) {
-        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kCellValue] autorelease];
-    }
-	
-	if ([indexPath isEqual:[self checkedItem]]) {
-		[self selectCell:cell];
+    if (indexPath.section == 0) {
+        UITableViewCell *cell   = [tableView dequeueReusableCellWithIdentifier:kCellValue];
+        NSArray *titles         = [_currentSpecifier multipleTitles];
+
+        if (!cell) {
+            cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kCellValue] autorelease];
+        }
+
+    	if ([indexPath isEqual:[self checkedItem]]) {
+    		[self selectCell:cell];
+        } else {
+            [self deselectCell:cell];
+        }
+
+    	@try {
+    		[[cell textLabel] setText:[self.settingsReader titleForStringId:[titles objectAtIndex:indexPath.row]]];
+    	}
+    	@catch (NSException * e) {}
+        return cell;
     } else {
-        [self deselectCell:cell];
+        return [self.extension tableView:tableView cellForRowAtIndexPath:indexPath];
     }
-	
-	@try {
-		[[cell textLabel] setText:[self.settingsReader titleForStringId:[titles objectAtIndex:indexPath.row]]];
-	}
-	@catch (NSException * e) {}
-    return cell;
 }
 
 - (CGSize)contentSizeForViewInPopover {
@@ -165,7 +184,9 @@
 
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-	
+	if (indexPath.section != 0) {
+        return;;
+    }
     if (indexPath == [self checkedItem]) {
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
         return;
