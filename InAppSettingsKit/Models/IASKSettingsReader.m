@@ -88,7 +88,10 @@ dataSource=_dataSource;
 }
 
 - (BOOL)supportsHw:(NSString*)hwSpec {
-    BOOL enabled = YES;
+    #if TARGET_IPHONE_SIMULATOR
+    return YES;
+    #endif
+    int enabled = B_UNKNOWN;
     BOOL or =  [hwSpec rangeOfString:@"or"].location != NSNotFound;
     if (hwSpec != nil) {
         // only when camera available
@@ -97,11 +100,15 @@ dataSource=_dataSource;
         }
         // only on iPhone
         if ((enabled || or) && [hwSpec rangeOfString:@"iPhone"].location != NSNotFound) {
-            enabled = !ISIPAD;
+            if (or && enabled != B_UNKNOWN) {
+
+            } else {
+                enabled = !ISIPAD;
+            }
+
         }
     }
     return enabled;
-
 }
 
 - (void)_reinterpretBundle:(NSDictionary*)settingsBundle {
@@ -250,7 +257,8 @@ dataSource=_dataSource;
 }
 
 - (NSString*)titleForStringId:(NSString*)stringId {
-	return [_bundle localizedStringForKey:stringId value:stringId table:self.localizationTable];
+    return NSLocalizedString(stringId, @"");
+//	return [_bundle localizedStringForKey:stringId value:stringId table:self.localizationTable];
 }
 
 - (NSString*)pathForImageNamed:(NSString*)image {

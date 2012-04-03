@@ -228,7 +228,10 @@ CGRect IASKCGRectSwap(CGRect rect);
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    return YES;
+    if (ISIPAD)
+        return YES;
+    else
+        return NO;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -451,8 +454,8 @@ CGRect IASKCGRectSwap(CGRect rect);
 	}
 	else if ([specifier.type isEqualToString:kIASKPSMultiValueSpecifier]) {
 		cell.textLabel.text = specifier.title;
-		cell.detailTextLabel.text = [[specifier titleForCurrentValue:[self.settingsStore objectForKey:specifier.key] != nil ? 
-									  [self.settingsStore objectForKey:specifier.key] : specifier.defaultValue] description];
+		cell.detailTextLabel.text = NSLocalizedString([[specifier titleForCurrentValue:[self.settingsStore objectForKey:specifier.key] != nil ?
+											  [self.settingsStore objectForKey:specifier.key] : specifier.defaultValue] description], @"");
 	}
 	else if ([specifier.type isEqualToString:kIASKPSTitleValueSpecifier]) {
 		cell.textLabel.text = specifier.title;

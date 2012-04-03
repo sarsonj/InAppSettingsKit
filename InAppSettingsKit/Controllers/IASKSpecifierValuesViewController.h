@@ -25,6 +25,8 @@
     -(int)additionalSections;
     -(int)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
     -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+
+
 @end
 
 @interface IASKSpecifierValuesViewController : UIViewController<IASKViewController> {

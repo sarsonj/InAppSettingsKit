@@ -86,7 +86,10 @@
 
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return YES;
+    if (ISIPAD)
+	    return YES;
+    else
+        return NO;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -167,7 +170,7 @@
         }
 
     	@try {
-    		[[cell textLabel] setText:[self.settingsReader titleForStringId:[titles objectAtIndex:indexPath.row]]];
+    		[[cell textLabel] setText:NSLocalizedString([self.settingsReader titleForStringId:[titles objectAtIndex:indexPath.row]], @"")];
     	}
     	@catch (NSException * e) {}
         return cell;

@@ -66,7 +66,8 @@
     [self setMultipleValuesDict:multipleValuesDict];
 }
 - (NSString*)localizedObjectForKey:(NSString*)key {
-	return [self.settingsReader titleForStringId:[_specifierDict objectForKey:key]];
+//	return [self.settingsReader titleForStringId:[_specifierDict objectForKey:key]];
+    return NSLocalizedString([_specifierDict objectForKey:key], @"");
 }
 
 - (NSString*)title {
