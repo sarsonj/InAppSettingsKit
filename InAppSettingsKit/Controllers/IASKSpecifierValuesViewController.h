@@ -21,7 +21,7 @@
 @class IASKSettingsReader;
 
 
-@protocol IASKSpecifierExtension
+@protocol IASKSpecifierExtension <NSObject>
     -(int)additionalSections;
     -(int)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
     -(UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath;

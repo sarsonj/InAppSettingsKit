@@ -105,7 +105,13 @@ dataSource=_dataSource;
             } else {
                 enabled = !ISIPAD;
             }
-
+        }
+        // only on iOS5
+        if ((enabled || or) && [hwSpec rangeOfString:@"iiOS5"].location != NSNotFound) {
+            if (or && enabled != B_UNKNOWN) {
+            } else {
+                enabled = [[UIScreen mainScreen] respondsToSelector:@selector(setBrightness:)];
+            }
         }
     }
     return enabled;
