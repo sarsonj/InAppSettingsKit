@@ -22,21 +22,29 @@
 @synthesize webView;
 
 - (id)initWithFile:(NSString*)urlString key:(NSString*)key {
-	if (!(self = [super initWithNibName:nil bundle:nil])) {
-		return nil;
-	}
-	
-	self.url = [NSURL URLWithString:urlString];
-	if (!self.url || ![self.url scheme]) {
-		NSString *path = [[NSBundle mainBundle] pathForResource:[urlString stringByDeletingPathExtension] ofType:[urlString pathExtension]];
-		if(path)
-			self.url = [NSURL fileURLWithPath:path];
-		else
-			self.url = nil;
-	}
-	return self;
+    self = [super init];
+    if (self) {
+        self.url = [NSURL URLWithString:urlString];
+        if (!self.url || ![self.url scheme]) {
+            NSString *path = [[NSBundle mainBundle] pathForResource:[urlString stringByDeletingPathExtension] ofType:[urlString pathExtension]];
+            if(path)
+                self.url = [NSURL fileURLWithPath:path];
+            else
+                self.url = nil;
+        }
+    }
+    return self;
 }
 
+- (void)loadView
+{
+    webView = [[UIWebView alloc] init];
+    webView.autoresizingMask = UIViewAutoresizingFlexibleWidth |
+    UIViewAutoresizingFlexibleHeight;
+    webView.delegate = self;
+    
+    self.view = webView;
+}
 
 - (void)dealloc {
 	[webView release], webView = nil;
@@ -125,8 +133,20 @@
 		}
 		
 		[mailViewController setToRecipients:toRecipients];
-
-		[self presentModalViewController:mailViewController animated:YES];
+    
+#if (__IPHONE_OS_VERSION_MIN_REQUIRED >= 50000)
+#pragma message "Now that we're iOS5 and up, remove this workaround"
+#endif
+    if([self respondsToSelector:@selector(presentViewController:animated:completion:)]) {
+        [self presentViewController:mailViewController
+                           animated:YES
+                         completion:nil];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        [self presentModalViewController:mailViewController animated:YES];
+#pragma clang diagnostic pop
+    }
 		[mailViewController release];
 		return NO;
 	}
@@ -140,7 +160,19 @@
 }
 
 - (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error {
-	[self dismissModalViewControllerAnimated:YES];
+#if (__IPHONE_OS_VERSION_MIN_REQUIRED >= 50000)
+#pragma message "Now that we're iOS5 and up, remove this workaround"
+#endif
+    if([self respondsToSelector:@selector(dismissViewControllerAnimated:completion:)]) {
+        [self dismissViewControllerAnimated:YES
+                                 completion:nil];
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        [self dismissModalViewControllerAnimated:YES];
+#pragma clang diagnostic pop
+
+    }
 }
 
 

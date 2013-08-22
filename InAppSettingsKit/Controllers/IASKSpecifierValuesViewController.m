@@ -55,6 +55,17 @@
     return _settingsStore;
 }
 
+- (void)loadView
+{
+    _tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
+    _tableView.autoresizingMask = UIViewAutoresizingFlexibleWidth |
+    UIViewAutoresizingFlexibleHeight;
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    
+    self.view = _tableView;
+}
+
 - (void)viewWillAppear:(BOOL)animated {
     if (_currentSpecifier) {
         [self setTitle:[_currentSpecifier title]];
@@ -210,16 +221,21 @@
                                                                                            forKey:[_currentSpecifier key]]];
 }
 
+- (CGSize)contentSizeForViewInPopover {
+    return [[self view] sizeThatFits:CGSizeMake(320, 2000)];
+}
+
+
 #pragma mark Notifications
 
 - (void)userDefaultsDidChange {
-	NSIndexPath *oldCheckedItem = self.checkedItem;
+	NSIndexPath *oldCheckedItem = [[self.checkedItem retain] autorelease];
 	if(_currentSpecifier) {
 		[self updateCheckedItem];
 	}
 	
 	// only reload the table if it had changed; prevents animation cancellation
-	if (self.checkedItem != oldCheckedItem) {
+	if (![self.checkedItem isEqual:oldCheckedItem]) {
 		[_tableView reloadData];
 	}
 }

@@ -197,6 +197,15 @@
     else if ([[_specifierDict objectForKey:KIASKKeyboardType] isEqualToString:kIASKKeyboardNumberPad]) {
         return UIKeyboardTypeNumberPad;
     }
+    else if ([[_specifierDict objectForKey:KIASKKeyboardType] isEqualToString:kIASKKeyboardPhonePad]) {
+        return UIKeyboardTypePhonePad;
+    }
+    else if ([[_specifierDict objectForKey:KIASKKeyboardType] isEqualToString:kIASKKeyboardNamePhonePad]) {
+        return UIKeyboardTypeNamePhonePad;
+    }
+    else if ([[_specifierDict objectForKey:KIASKKeyboardType] isEqualToString:kIASKKeyboardASCIICapable]) {
+        return UIKeyboardTypeASCIICapable;
+    }
     else if ([[_specifierDict objectForKey:KIASKKeyboardType] isEqualToString:kIASKKeyboardDecimalPad]) {
 		if (kCFCoreFoundationVersionNumber >= kCFCoreFoundationVersionNumber_iPhoneOS_4_1) {
 			return UIKeyboardTypeDecimalPad;
@@ -243,4 +252,35 @@
     return UITextAutocorrectionTypeDefault;
 }
 
+- (UIImage *)cellImage
+{
+    return [UIImage imageNamed:[_specifierDict objectForKey:kIASKCellImage]];
+}
+
+- (UIImage *)highlightedCellImage
+{
+    return [UIImage imageNamed:[[_specifierDict objectForKey:kIASKCellImage ] stringByAppendingString:@"Highlighted"]];
+}
+
+- (BOOL)adjustsFontSizeToFitWidth {
+	NSNumber *boxedResult = [_specifierDict objectForKey:kIASKAdjustsFontSizeToFitWidth];
+	return !boxedResult || [boxedResult boolValue];
+}
+
+- (UITextAlignment)textAlignment
+{
+    if ([[_specifierDict objectForKey:kIASKTextLabelAlignment] isEqualToString:kIASKTextLabelAlignmentLeft]) {
+        return NSTextAlignmentLeft;
+    } else if ([[_specifierDict objectForKey:kIASKTextLabelAlignment] isEqualToString:kIASKTextLabelAlignmentCenter]) {
+        return NSTextAlignmentCenter;
+    } else if ([[_specifierDict objectForKey:kIASKTextLabelAlignment] isEqualToString:kIASKTextLabelAlignmentRight]) {
+        return NSTextAlignmentRight;
+    }
+    if ([self.type isEqualToString:kIASKButtonSpecifier] && !self.cellImage) {
+		return NSTextAlignmentCenter;
+	} else if ([self.type isEqualToString:kIASKPSMultiValueSpecifier] || [self.type isEqualToString:kIASKPSTitleValueSpecifier]) {
+		return NSTextAlignmentRight;
+	}
+	return NSTextAlignmentLeft;
+}
 @end

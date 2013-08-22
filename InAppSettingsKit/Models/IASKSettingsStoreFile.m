@@ -17,6 +17,13 @@
 
 #import "IASKSettingsStoreFile.h"
 
+@interface IASKSettingsStoreFile() {
+    NSMutableDictionary * _dict;
+}
+
+@property (nonatomic, retain, readwrite) NSString* filePath;
+
+@end
 
 @implementation IASKSettingsStoreFile
 
@@ -37,7 +44,6 @@
 
     [super dealloc];
 }
-
 
 - (void)setObject:(id)value forKey:(NSString *)key {
     [_dict setObject:value forKey:key];

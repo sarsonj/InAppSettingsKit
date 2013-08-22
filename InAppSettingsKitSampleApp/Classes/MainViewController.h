@@ -15,13 +15,19 @@
 //  This code is licensed under the BSD license that is available at: http://www.opensource.org/licenses/bsd-license.php
 //
 
-#import "IASKAppSettingsViewController.h"
+#if USES_IASK_STATIC_LIBRARY
+  #import "InAppSettingsKit/IASKAppSettingsViewController.h"
+#else
+  #import "IASKAppSettingsViewController.h"
+#endif
 
 @interface MainViewController : UIViewController <IASKSettingsDelegate, UITextViewDelegate> { 
     IASKAppSettingsViewController *appSettingsViewController;
+    IASKAppSettingsViewController *tabAppSettingsViewController;
 }
 
 @property (nonatomic, retain) IASKAppSettingsViewController *appSettingsViewController;
+@property (nonatomic, retain) IBOutlet IASKAppSettingsViewController *tabAppSettingsViewController;
 
 - (IBAction)showSettingsPush:(id)sender;
 - (IBAction)showSettingsModal:(id)sender;
