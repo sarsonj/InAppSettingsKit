@@ -198,7 +198,8 @@
     }
     [self setDataSource:dataSource];
 >>>>>>> 3ad873577684c1e98c11cc081200e9d0402ad3b7
-}*/
+*/
+}
 
 /**
 * Initialize default values for this settings
