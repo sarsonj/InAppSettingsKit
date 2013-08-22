@@ -170,7 +170,7 @@
         }
 
     	@try {
-    		[[cell textLabel] setText:NSLocalizedString([self.settingsReader titleForStringId:[titles objectAtIndex:indexPath.row]], @"")];
+    		[[cell textLabel] setText:TSLocalizedString([self.settingsReader titleForStringId:[titles objectAtIndex:indexPath.row]], @"")];
     	}
     	@catch (NSException * e) {}
         return cell;

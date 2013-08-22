@@ -182,7 +182,7 @@ CGRect IASKCGRectSwap(CGRect rect);
 		[buttonItem release];
 	} 
 	if (!self.title) {
-		self.title = NSLocalizedString(@"Settings", @"");
+		self.title = TSLocalizedString(@"Settings", @"");
 	}
 	
 	if ([self.settingsStore isKindOfClass:[IASKSettingsStoreUserDefaults class]]) {
@@ -454,7 +454,7 @@ CGRect IASKCGRectSwap(CGRect rect);
 	}
 	else if ([specifier.type isEqualToString:kIASKPSMultiValueSpecifier]) {
 		cell.textLabel.text = specifier.title;
-		cell.detailTextLabel.text = NSLocalizedString([[specifier titleForCurrentValue:[self.settingsStore objectForKey:specifier.key] != nil ?
+		cell.detailTextLabel.text = TSLocalizedString([[specifier titleForCurrentValue:[self.settingsStore objectForKey:specifier.key] != nil ?
 											  [self.settingsStore objectForKey:specifier.key] : specifier.defaultValue] description], @"");
 	}
 	else if ([specifier.type isEqualToString:kIASKPSTitleValueSpecifier]) {
@@ -698,10 +698,10 @@ CGRect IASKCGRectSwap(CGRect rect);
             [mailViewController release];
         } else {
             UIAlertView *alert = [[UIAlertView alloc]
-                                  initWithTitle:NSLocalizedString(@"Mail not configured", @"InAppSettingsKit")
-                                  message:NSLocalizedString(@"This device is not configured for sending Email. Please configure the Mail settings in the Settings app.", @"InAppSettingsKit")
+                                  initWithTitle:TSLocalizedString(@"Mail not configured", @"InAppSettingsKit")
+                                  message:TSLocalizedString(@"This device is not configured for sending Email. Please configure the Mail settings in the Settings app.", @"InAppSettingsKit")
                                   delegate: nil
-                                  cancelButtonTitle:NSLocalizedString(@"OK", @"InAppSettingsKit")
+                                  cancelButtonTitle:TSLocalizedString(@"OK", @"InAppSettingsKit")
                                   otherButtonTitles:nil];
             [alert show];
             [alert release];

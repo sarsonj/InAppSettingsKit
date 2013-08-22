@@ -263,7 +263,7 @@ dataSource=_dataSource;
 }
 
 - (NSString*)titleForStringId:(NSString*)stringId {
-    return NSLocalizedString(stringId, @"");
+    return TSLocalizedString(stringId, @"");
 //	return [_bundle localizedStringForKey:stringId value:stringId table:self.localizationTable];
 }
 
