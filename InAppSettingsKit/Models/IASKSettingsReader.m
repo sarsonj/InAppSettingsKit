@@ -55,7 +55,7 @@ dataSource=_dataSource;
 		_bundle = [[NSBundle bundleWithPath:[self bundlePath]] retain];
 		
 		// Look for localization file
-		self.localizationTable = [self.settingsBundle objectForKey:@"StringsTable"];
+		self.localizationTable = (self.settingsBundle)[@"StringsTable"];
 		if (!self.localizationTable)
 		{
 			// Look for localization file using filename
@@ -118,13 +118,13 @@ dataSource=_dataSource;
 }
 
 - (void)_reinterpretBundle:(NSDictionary*)settingsBundle {
-	NSArray *preferenceSpecifiers	= [settingsBundle objectForKey:kIASKPreferenceSpecifiers];
+	NSArray *preferenceSpecifiers	= settingsBundle[kIASKPreferenceSpecifiers];
 	NSInteger sectionCount			= -1;
 	NSMutableArray *dataSource		= [[[NSMutableArray alloc] init] autorelease];
     BOOL skipSection = NO;
 	for (NSDictionary *specifier in preferenceSpecifiers) {
-		if ([(NSString*)[specifier objectForKey:kIASKType] isEqualToString:kIASKPSGroupSpecifier] ) {
-            skipSection = ![self supportsHw:[specifier objectForKey:kIASKHWSpec]];
+		if ([(NSString*)specifier[kIASKType] isEqualToString:kIASKPSGroupSpecifier] ) {
+            skipSection = ![self supportsHw:specifier[kIASKHWSpec]];
             if (!skipSection) {
                 NSMutableArray *newArray = [[NSMutableArray alloc] init];
                 [newArray addObject:specifier];
@@ -135,7 +135,7 @@ dataSource=_dataSource;
 		}
 		else {
             if (!skipSection) {
-                BOOL skipSItem = ![self supportsHw:[specifier objectForKey:kIASKHWSpec]];
+                BOOL skipSItem = ![self supportsHw:specifier[kIASKHWSpec]];
                 if (!skipSItem) {
                     IASKSpecifier *newSpecifier = [[IASKSpecifier alloc] initWithSpecifier:specifier];
 
@@ -146,7 +146,7 @@ dataSource=_dataSource;
                         sectionCount++;
                     }
 
-                    [(NSMutableArray*)[dataSource objectAtIndex:sectionCount] addObject:newSpecifier];
+                    [(NSMutableArray*)dataSource[sectionCount] addObject:newSpecifier];
                     [newSpecifier release];
                 }
             }
@@ -161,7 +161,7 @@ dataSource=_dataSource;
 */
 -(void)setDefaultsForStore:(id<IASKSettingsStore>)store {
     NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-    Class boolClass = [[NSNumber numberWithBool:YES] class];
+    Class boolClass = [@YES class];
     for (NSArray *items in self.dataSource) {
         for (id val in items) {
             if ([val isKindOfClass:[IASKSpecifier class]]) {
@@ -192,7 +192,7 @@ dataSource=_dataSource;
 
 
 - (BOOL)_sectionHasHeading:(NSInteger)section {
-	return [[[[self dataSource] objectAtIndex:section] objectAtIndex:0] isKindOfClass:[NSDictionary class]];
+	return [[self dataSource][section][0] isKindOfClass:[NSDictionary class]];
 }
 
 - (NSInteger)numberOfSections {
@@ -201,22 +201,22 @@ dataSource=_dataSource;
 
 - (NSInteger)numberOfRowsForSection:(NSInteger)section {
 	int headingCorrection = [self _sectionHasHeading:section] ? 1 : 0;
-	return [(NSArray*)[[self dataSource] objectAtIndex:section] count] - headingCorrection;
+	return [(NSArray*)[self dataSource][section] count] - headingCorrection;
 }
 
 - (IASKSpecifier*)specifierForIndexPath:(NSIndexPath*)indexPath {
 	int headingCorrection = [self _sectionHasHeading:indexPath.section] ? 1 : 0;
 	
-	IASKSpecifier *specifier = [[[self dataSource] objectAtIndex:indexPath.section] objectAtIndex:(indexPath.row+headingCorrection)];
+	IASKSpecifier *specifier = [self dataSource][indexPath.section][(indexPath.row+headingCorrection)];
 	specifier.settingsReader = self;
 	return specifier;
 }
 
 - (NSIndexPath*)indexPathForKey:(NSString *)key {
 	for (NSUInteger sectionIndex = 0; sectionIndex < self.dataSource.count; sectionIndex++) {
-		NSArray *section = [self.dataSource objectAtIndex:sectionIndex];
+		NSArray *section = (self.dataSource)[sectionIndex];
 		for (NSUInteger rowIndex = 0; rowIndex < section.count; rowIndex++) {
-			IASKSpecifier *specifier = (IASKSpecifier*)[section objectAtIndex:rowIndex];
+			IASKSpecifier *specifier = (IASKSpecifier*)section[rowIndex];
 			if ([specifier isKindOfClass:[IASKSpecifier class]] && [specifier.key isEqualToString:key]) {
 				NSUInteger correctedRowIndex = rowIndex - [self _sectionHasHeading:sectionIndex];
 				return [NSIndexPath indexPathForRow:correctedRowIndex inSection:sectionIndex];
@@ -241,23 +241,23 @@ dataSource=_dataSource;
 
 - (NSString*)titleForSection:(NSInteger)section {
 	if ([self _sectionHasHeading:section]) {
-		NSDictionary *dict = [[[self dataSource] objectAtIndex:section] objectAtIndex:kIASKSectionHeaderIndex];
-		return [self titleForStringId:[dict objectForKey:kIASKTitle]];
+		NSDictionary *dict = [self dataSource][section][kIASKSectionHeaderIndex];
+		return [self titleForStringId:dict[kIASKTitle]];
 	}
 	return nil;
 }
 
 - (NSString*)keyForSection:(NSInteger)section {
 	if ([self _sectionHasHeading:section]) {
-		return [[[[self dataSource] objectAtIndex:section] objectAtIndex:kIASKSectionHeaderIndex] objectForKey:kIASKKey];
+		return [self dataSource][section][kIASKSectionHeaderIndex][kIASKKey];
 	}
 	return nil;
 }
 
 - (NSString*)footerTextForSection:(NSInteger)section {
 	if ([self _sectionHasHeading:section]) {
-		NSDictionary *dict = [[[self dataSource] objectAtIndex:section] objectAtIndex:kIASKSectionHeaderIndex];
-		return [self titleForStringId:[dict objectForKey:kIASKFooterText]];
+		NSDictionary *dict = [self dataSource][section][kIASKSectionHeaderIndex];
+		return [self titleForStringId:dict[kIASKFooterText]];
 	}
 	return nil;
 }
@@ -316,16 +316,16 @@ dataSource=_dataSource;
 	// - also check current locale (short only)
 	
 	NSArray *bundles =
-	[NSArray arrayWithObjects:kIASKBundleFolderAlt, kIASKBundleFolder, nil];
+	@[kIASKBundleFolderAlt, kIASKBundleFolder];
 	
 	NSArray *extensions =
-	[NSArray arrayWithObjects:@".inApp.plist", @".plist", nil];
+	@[@".inApp.plist", @".plist"];
 	
 	NSArray *suffixes =
-	[NSArray arrayWithObjects:[self platformSuffix], @"", nil];
+	@[[self platformSuffix], @""];
 	
 	NSArray *languages =
-	[NSArray arrayWithObjects:[[[NSLocale preferredLanguages] objectAtIndex:0] stringByAppendingString:KIASKBundleLocaleFolderExtension], @"", nil];
+	@[[[NSLocale preferredLanguages][0] stringByAppendingString:KIASKBundleLocaleFolderExtension], @""];
 	
 	NSString *path = nil;
 	NSFileManager *fileManager = [NSFileManager defaultManager];

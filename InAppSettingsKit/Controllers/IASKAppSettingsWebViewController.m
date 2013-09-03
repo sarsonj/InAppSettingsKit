@@ -77,13 +77,13 @@
 		mailViewController.mailComposeDelegate = self;
 
 		NSMutableArray *toRecipients = [NSMutableArray array];
-		NSString *defaultRecipient = [rawURLparts objectAtIndex:0];
+		NSString *defaultRecipient = rawURLparts[0];
 		if (defaultRecipient.length) {
 			[toRecipients addObject:defaultRecipient];
 		}
 		
 		if (rawURLparts.count == 2) {
-			NSString *queryString = [rawURLparts objectAtIndex:1];
+			NSString *queryString = rawURLparts[1];
 			
 			NSArray *params = [queryString componentsSeparatedByString:@"&"];
 			for (NSString *param in params) {
@@ -91,8 +91,8 @@
 				if (keyValue.count != 2) {
 					continue;
 				}
-				NSString *key = [[keyValue objectAtIndex:0] lowercaseString];
-				NSString *value = [keyValue objectAtIndex:1];
+				NSString *key = [keyValue[0] lowercaseString];
+				NSString *value = keyValue[1];
 				
 				value =  (NSString *)CFURLCreateStringByReplacingPercentEscapesUsingEncoding(kCFAllocatorDefault,
 																							 (CFStringRef)value,

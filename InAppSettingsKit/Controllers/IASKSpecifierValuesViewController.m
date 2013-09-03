@@ -170,7 +170,7 @@
         }
 
     	@try {
-    		[[cell textLabel] setText:TSLocalizedString([self.settingsReader titleForStringId:[titles objectAtIndex:indexPath.row]], @"")];
+    		[[cell textLabel] setText:TSLocalizedString([self.settingsReader titleForStringId:titles[indexPath.row]], @"")];
     	}
     	@catch (NSException * e) {}
         return cell;
@@ -202,12 +202,11 @@
     [self selectCell:[tableView cellForRowAtIndexPath:indexPath]];
     [self setCheckedItem:indexPath];
 	
-    [self.settingsStore setObject:[values objectAtIndex:indexPath.row] forKey:[_currentSpecifier key]];
+    [self.settingsStore setObject:values[indexPath.row] forKey:[_currentSpecifier key]];
 	[self.settingsStore synchronize];
     [[NSNotificationCenter defaultCenter] postNotificationName:kIASKAppSettingChanged
                                                         object:[_currentSpecifier key]
-                                                      userInfo:[NSDictionary dictionaryWithObject:[values objectAtIndex:indexPath.row]
-                                                                                           forKey:[_currentSpecifier key]]];
+                                                      userInfo:@{[_currentSpecifier key]: values[indexPath.row]}];
 }
 
 #pragma mark Notifications
