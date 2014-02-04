@@ -46,11 +46,11 @@
 }
 
 - (void)setObject:(id)value forKey:(NSString *)key {
-    [_dict setObject:value forKey:key];
+    _dict[key] = value;
 }
 
 - (id)objectForKey:(NSString *)key {
-    return [_dict objectForKey:key];
+    return _dict[key];
 }
 
 - (BOOL)synchronize {

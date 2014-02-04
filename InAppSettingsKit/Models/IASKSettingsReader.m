@@ -70,7 +70,32 @@
 - (id)initWithFile:(NSString*)file {
     return [self initWithSettingsFileNamed:file applicationBundle:[NSBundle mainBundle]];
 }
+/*
+=======
+	if ((self=[super init])) {
 
+
+		self.path = [self locateSettingsFile: file];
+		[self setSettingsBundle:[NSDictionary dictionaryWithContentsOfFile:self.path]];
+		self.bundlePath = [self.path stringByDeletingLastPathComponent];
+		_bundle = [[NSBundle bundleWithPath:[self bundlePath]] retain];
+		
+		// Look for localization file
+		self.localizationTable = (self.settingsBundle)[@"StringsTable"];
+		if (!self.localizationTable)
+		{
+			// Look for localization file using filename
+			self.localizationTable = [[[[self.path stringByDeletingPathExtension] // removes '.plist'
+										stringByDeletingPathExtension] // removes potential '.inApp'
+									   lastPathComponent] // strip absolute path
+									  stringByReplacingOccurrencesOfString:[self platformSuffix] withString:@""]; // removes potential '~device' (~ipad, ~iphone)
+			if([_bundle pathForResource:self.localizationTable ofType:@"strings"] == nil){
+				// Could not find the specified localization: use default
+				self.localizationTable = @"Root";
+			}
+		}
+>>>>>>> oldversion
+*/
 - (id)init {
     return [self initWithFile:@"Root"];
 }
@@ -129,13 +154,13 @@
 }
 
 - (void)_reinterpretBundle:(NSDictionary*)settingsBundle {
-	NSArray *preferenceSpecifiers	= [settingsBundle objectForKey:kIASKPreferenceSpecifiers];
+	NSArray *preferenceSpecifiers	= settingsBundle[kIASKPreferenceSpecifiers];
 	NSInteger sectionCount			= -1;
 	NSMutableArray *dataSource		= [[[NSMutableArray alloc] init] autorelease];
     BOOL skipSection = NO;
 	for (NSDictionary *specifier in preferenceSpecifiers) {
-		if ([(NSString*)[specifier objectForKey:kIASKType] isEqualToString:kIASKPSGroupSpecifier] ) {
-            skipSection = ![self supportsHw:[specifier objectForKey:kIASKHWSpec]];
+		if ([(NSString*)specifier[kIASKType] isEqualToString:kIASKPSGroupSpecifier] ) {
+            skipSection = ![self supportsHw:specifier[kIASKHWSpec]];
             if (!skipSection) {
                 NSMutableArray *newArray = [[NSMutableArray alloc] init];
                 [newArray addObject:specifier];
@@ -146,7 +171,7 @@
 		}
 		else {
             if (!skipSection) {
-                BOOL skipSItem = ![self supportsHw:[specifier objectForKey:kIASKHWSpec]];
+                BOOL skipSItem = ![self supportsHw:specifier[kIASKHWSpec]];
                 if (!skipSItem) {
                     IASKSpecifier *newSpecifier = [[IASKSpecifier alloc] initWithSpecifier:specifier];
 
@@ -157,7 +182,7 @@
                         sectionCount++;
                     }
 
-                    [(NSMutableArray*)[dataSource objectAtIndex:sectionCount] addObject:newSpecifier];
+                    [(NSMutableArray*)dataSource[sectionCount] addObject:newSpecifier];
                     [newSpecifier release];
                 }
             }
@@ -207,7 +232,7 @@
 */
 -(void)setDefaultsForStore:(id<IASKSettingsStore>)store {
     NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
-    Class boolClass = [[NSNumber numberWithBool:YES] class];
+    Class boolClass = [@YES class];
     for (NSArray *items in self.dataSource) {
         for (id val in items) {
             if ([val isKindOfClass:[IASKSpecifier class]]) {
@@ -271,6 +296,7 @@
     }
     return nil;
 }
+
 
 - (IASKSpecifier*)specifierForKey:(NSString*)key {
     for (NSArray *specifiers in _dataSource) {
@@ -391,7 +417,7 @@
             }
         }
     }
-    
+
 exitFromNestedLoop:
     return path;
 }

@@ -64,6 +64,7 @@
     _tableView.dataSource = self;
     
     self.view = _tableView;
+
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -78,13 +79,25 @@
 		// Make sure the currently checked item is visible
         [_tableView scrollToRowAtIndexPath:[self checkedItem] atScrollPosition:UITableViewScrollPositionMiddle animated:NO];
     }
-	[super viewWillAppear:animated];
+
+
+
+    [super viewWillAppear:animated];
 }
+
+
+
+- (CGSize)contentSizeForViewInPopover {
+    CGSize toFit = [self.view sizeThatFits:CGSizeMake(400, 2000)];
+    return  toFit;
+}
+
 
 - (void)viewDidAppear:(BOOL)animated {
 	[_tableView flashScrollIndicators];
 	[super viewDidAppear:animated];
-	[[NSNotificationCenter defaultCenter] addObserver:self
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(userDefaultsDidChange)
 												 name:NSUserDefaultsDidChangeNotification
 											   object:[NSUserDefaults standardUserDefaults]];
@@ -181,19 +194,13 @@
         }
 
     	@try {
-    		[[cell textLabel] setText:TSLocalizedString([self.settingsReader titleForStringId:[titles objectAtIndex:indexPath.row]], @"")];
+    		[[cell textLabel] setText:TSLocalizedString([self.settingsReader titleForStringId:titles[indexPath.row]], @"")];
     	}
     	@catch (NSException * e) {}
         return cell;
     } else {
         return [self.extension tableView:tableView cellForRowAtIndexPath:indexPath];
     }
-}
-
-- (CGSize)contentSizeForViewInPopover {
-    NIDINFO(@"Size 2: %f,%f", self.view.size.width, self.view.size.height);
-    //return [[self view] sizeThatFits:CGSizeMake(320, 2000)];
-    return CGSizeMake(400, self.tableView.contentSize.height);
 }
 
 
@@ -213,12 +220,11 @@
     [self selectCell:[tableView cellForRowAtIndexPath:indexPath]];
     [self setCheckedItem:indexPath];
 	
-    [self.settingsStore setObject:[values objectAtIndex:indexPath.row] forKey:[_currentSpecifier key]];
+    [self.settingsStore setObject:values[indexPath.row] forKey:[_currentSpecifier key]];
 	[self.settingsStore synchronize];
     [[NSNotificationCenter defaultCenter] postNotificationName:kIASKAppSettingChanged
                                                         object:[_currentSpecifier key]
-                                                      userInfo:[NSDictionary dictionaryWithObject:[values objectAtIndex:indexPath.row]
-                                                                                           forKey:[_currentSpecifier key]]];
+                                                      userInfo:@{[_currentSpecifier key]: values[indexPath.row]}];
 }
 
 //- (CGSize)contentSizeForViewInPopover {

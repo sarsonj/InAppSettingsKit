@@ -16,6 +16,7 @@
 
 
 #import <CoreGraphics/CoreGraphics.h>
+#import <Three20UI/UIViewAdditions.h>
 #import "IASKAppSettingsViewController.h"
 #import "IASKSettingsReader.h"
 #import "IASKSettingsStoreUserDefaults.h"
@@ -94,8 +95,7 @@ CGRect IASKCGRectSwap(CGRect rect);
 	
     self.tableView.contentOffset = CGPointMake(0, 0);
 	self.settingsReader = nil; // automatically initializes itself
-	[_hiddenKeys release], _hiddenKeys = nil;
-	[self.tableView reloadData];
+    [self.tableView reloadData];
 }
 
 - (BOOL)isPad {
@@ -139,8 +139,8 @@ CGRect IASKCGRectSwap(CGRect rect);
 - (NSMutableArray *)viewList {
     if (!_viewList) {
 		_viewList = [[NSMutableArray alloc] init];
-		[_viewList addObject:[NSDictionary dictionaryWithObjectsAndKeys:@"IASKSpecifierValuesView", @"ViewName",nil]];
-		[_viewList addObject:[NSDictionary dictionaryWithObjectsAndKeys:@"IASKAppSettingsView", @"ViewName",nil]];
+		[_viewList addObject:@{@"ViewName": @"IASKSpecifierValuesView"}];
+		[_viewList addObject:@{@"ViewName": @"IASKAppSettingsView"}];
 	}
 	return _viewList;
 }
@@ -149,12 +149,16 @@ CGRect IASKCGRectSwap(CGRect rect);
   [super viewDidLoad];
   if ([self isPad]) {
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLineEtched;
+
   }
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapToEndEdit:)];   
     tapGesture.cancelsTouchesInView = NO;
     [self.tableView addGestureRecognizer:tapGesture];
     [tapGesture release];
 }
+
+
+
 
 - (void)viewDidUnload {
   [super viewDidUnload];
@@ -166,11 +170,11 @@ CGRect IASKCGRectSwap(CGRect rect);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-	// if there's something selected, the value might have changed
+    // if there's something selected, the value might have changed
 	// so reload that row
 	NSIndexPath *selectedIndexPath = [self.tableView indexPathForSelectedRow];
 	if(selectedIndexPath) {
-		[self.tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:selectedIndexPath] 
+		[self.tableView reloadRowsAtIndexPaths:@[selectedIndexPath] 
 							  withRowAnimation:UITableViewRowAnimationNone];
 		// and reselect it, so we get the nice default deselect animation from UITableViewController
 		[self.tableView selectRowAtIndexPath:selectedIndexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
@@ -195,20 +199,27 @@ CGRect IASKCGRectSwap(CGRect rect);
 												   object:[NSUserDefaults standardUserDefaults]];
 		[self userDefaultsDidChange]; // force update in case of changes while we were hidden
 	}
+
+
 	[super viewWillAppear:animated];
 }
 
 
+
+
 - (CGSize)contentSizeForViewInPopover {
-    NIDINFO(@"Size: %f,%f", self.view.size.width, self.view.size.height);
-    return [[self view] sizeThatFits:CGSizeMake(400, 2000)];
+    CGSize toFit = [self.view sizeThatFits:CGSizeMake(400, 2000)];
+    return  toFit;
 }
 
 
-- (void)viewDidAppear:(BOOL)animated {
-	[super viewDidAppear:animated];
 
-	NSNotificationCenter *dc = [NSNotificationCenter defaultCenter];
+
+- (void)viewDidAppear:(BOOL)animated {
+
+    [super viewDidAppear:animated];
+
+    NSNotificationCenter *dc = [NSNotificationCenter defaultCenter];
 	IASK_IF_IOS4_OR_GREATER([dc addObserver:self selector:@selector(synchronizeSettings) name:UIApplicationDidEnterBackgroundNotification object:[UIApplication sharedApplication]];);
 	IASK_IF_IOS4_OR_GREATER([dc addObserver:self selector:@selector(reload) name:UIApplicationWillEnterForegroundNotification object:[UIApplication sharedApplication]];);
 	[dc addObserver:self selector:@selector(synchronizeSettings) name:UIApplicationWillTerminateNotification object:[UIApplication sharedApplication]];
@@ -351,7 +362,7 @@ CGRect IASKCGRectSwap(CGRect rect);
 
 - (void)dismiss:(id)sender {
 	[self.settingsStore synchronize];
-	
+	self.navigationController.delegate = nil;
 	if (self.delegate && [self.delegate conformsToProtocol:@protocol(IASKSettingsDelegate)]) {
 		[self.delegate settingsViewControllerDidEnd:self];
 	}
@@ -379,8 +390,7 @@ CGRect IASKCGRectSwap(CGRect rect);
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:kIASKAppSettingChanged
                                                         object:[toggle key]
-                                                      userInfo:[NSDictionary dictionaryWithObject:[self.settingsStore objectForKey:[toggle key]]
-                                                                                           forKey:[toggle key]]];
+                                                      userInfo:@{[toggle key]: [self.settingsStore objectForKey:[toggle key]]}];
 }
 
 - (void)sliderChangedValue:(id)sender {
@@ -388,8 +398,7 @@ CGRect IASKCGRectSwap(CGRect rect);
     [self.settingsStore setFloat:[slider value] forKey:[slider key]];
     [[NSNotificationCenter defaultCenter] postNotificationName:kIASKAppSettingChanged
                                                         object:[slider key]
-                                                      userInfo:[NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:[slider value]]
-                                                                                           forKey:[slider key]]];
+                                                      userInfo:@{[slider key]: @([slider value])}];
 }
 
 
@@ -640,22 +649,22 @@ CGRect IASKCGRectSwap(CGRect rect);
     assert(![[specifier type] isEqualToString:kIASKPSSliderSpecifier]);
 
     if ([[specifier type] isEqualToString:kIASKPSMultiValueSpecifier]) {
-        IASKSpecifierValuesViewController *targetViewController = [[self.viewList objectAtIndex:kIASKSpecifierValuesViewControllerIndex] objectForKey:@"viewController"];
+        IASKSpecifierValuesViewController *targetViewController = (self.viewList)[kIASKSpecifierValuesViewControllerIndex][@"viewController"];
 		
         if (targetViewController == nil) {
             // the view controller has not been created yet, create it and set it to our viewList array
             // create a new dictionary with the new view controller
             NSMutableDictionary *newItemDict = [NSMutableDictionary dictionaryWithCapacity:3];
-            [newItemDict addEntriesFromDictionary: [self.viewList objectAtIndex:kIASKSpecifierValuesViewControllerIndex]];	// copy the title and explain strings
+            [newItemDict addEntriesFromDictionary: (self.viewList)[kIASKSpecifierValuesViewControllerIndex]];	// copy the title and explain strings
             
             targetViewController = [[IASKSpecifierValuesViewController alloc] init];
             // add the new view controller to the dictionary and then to the 'viewList' array
-            [newItemDict setObject:targetViewController forKey:@"viewController"];
-            [self.viewList replaceObjectAtIndex:kIASKSpecifierValuesViewControllerIndex withObject:newItemDict];
+            newItemDict[@"viewController"] = targetViewController;
+            (self.viewList)[kIASKSpecifierValuesViewControllerIndex] = newItemDict;
             [targetViewController release];
             Class extension = [specifier specifierExtensionClass];
             // load the view controll back in to push it
-            targetViewController = [[self.viewList objectAtIndex:kIASKSpecifierValuesViewControllerIndex] objectForKey:@"viewController"];
+            targetViewController = (self.viewList)[kIASKSpecifierValuesViewControllerIndex][@"viewController"];
             if (extension != nil) {
                 id<IASKSpecifierExtension> extensionImpl = [[[extension alloc] init] autorelease];
                 targetViewController.extension = extensionImpl;
@@ -698,13 +707,13 @@ CGRect IASKCGRectSwap(CGRect rect);
             return;
         }        
         
-        IASKAppSettingsViewController *targetViewController = [[self.viewList objectAtIndex:kIASKSpecifierChildViewControllerIndex] objectForKey:@"viewController"];
+        IASKAppSettingsViewController *targetViewController = (self.viewList)[kIASKSpecifierChildViewControllerIndex][@"viewController"];
 		
         if (targetViewController == nil) {
             // the view controller has not been created yet, create it and set it to our viewList array
             // create a new dictionary with the new view controller
             NSMutableDictionary *newItemDict = [NSMutableDictionary dictionaryWithCapacity:3];
-            [newItemDict addEntriesFromDictionary: [self.viewList objectAtIndex:kIASKSpecifierChildViewControllerIndex]];	// copy the title and explain strings
+            [newItemDict addEntriesFromDictionary: (self.viewList)[kIASKSpecifierChildViewControllerIndex]];	// copy the title and explain strings
             
             targetViewController = [[[self class] alloc] init];
 			targetViewController.showDoneButton = NO;
@@ -712,12 +721,12 @@ CGRect IASKCGRectSwap(CGRect rect);
 			targetViewController.delegate = self.delegate;
 
             // add the new view controller to the dictionary and then to the 'viewList' array
-            [newItemDict setObject:targetViewController forKey:@"viewController"];
-            [self.viewList replaceObjectAtIndex:kIASKSpecifierChildViewControllerIndex withObject:newItemDict];
+            newItemDict[@"viewController"] = targetViewController;
+            (self.viewList)[kIASKSpecifierChildViewControllerIndex] = newItemDict;
             [targetViewController release];
             
             // load the view controll back in to push it
-            targetViewController = [[self.viewList objectAtIndex:kIASKSpecifierChildViewControllerIndex] objectForKey:@"viewController"];
+            targetViewController = (self.viewList)[kIASKSpecifierChildViewControllerIndex][@"viewController"];
         }
 		targetViewController.file = specifier.file;
 		targetViewController.hiddenKeys = self.hiddenKeys;
@@ -755,19 +764,19 @@ CGRect IASKCGRectSwap(CGRect rect);
             if ([specifier localizedObjectForKey:kIASKMailComposeSubject]) {
                 [mailViewController setSubject:[specifier localizedObjectForKey:kIASKMailComposeSubject]];
             }
-            if ([[specifier specifierDict] objectForKey:kIASKMailComposeToRecipents]) {
-                [mailViewController setToRecipients:[[specifier specifierDict] objectForKey:kIASKMailComposeToRecipents]];
+            if ([specifier specifierDict][kIASKMailComposeToRecipents]) {
+                [mailViewController setToRecipients:[specifier specifierDict][kIASKMailComposeToRecipents]];
             }
-            if ([[specifier specifierDict] objectForKey:kIASKMailComposeCcRecipents]) {
-                [mailViewController setCcRecipients:[[specifier specifierDict] objectForKey:kIASKMailComposeCcRecipents]];
+            if ([specifier specifierDict][kIASKMailComposeCcRecipents]) {
+                [mailViewController setCcRecipients:[specifier specifierDict][kIASKMailComposeCcRecipents]];
             }
-            if ([[specifier specifierDict] objectForKey:kIASKMailComposeBccRecipents]) {
-                [mailViewController setBccRecipients:[[specifier specifierDict] objectForKey:kIASKMailComposeBccRecipents]];
+            if ([specifier specifierDict][kIASKMailComposeBccRecipents]) {
+                [mailViewController setBccRecipients:[specifier specifierDict][kIASKMailComposeBccRecipents]];
             }
             if ([specifier localizedObjectForKey:kIASKMailComposeBody]) {
                 BOOL isHTML = NO;
-                if ([[specifier specifierDict] objectForKey:kIASKMailComposeBodyIsHTML]) {
-                    isHTML = [[[specifier specifierDict] objectForKey:kIASKMailComposeBodyIsHTML] boolValue];
+                if ([specifier specifierDict][kIASKMailComposeBodyIsHTML]) {
+                    isHTML = [[specifier specifierDict][kIASKMailComposeBodyIsHTML] boolValue];
                 }
                 
               if ([self.delegate respondsToSelector:@selector(settingsViewController:mailComposeBodyForSpecifier:)]) {
@@ -864,8 +873,7 @@ CGRect IASKCGRectSwap(CGRect rect);
     [_settingsStore setObject:[text text] forKey:[text key]];
     [[NSNotificationCenter defaultCenter] postNotificationName:kIASKAppSettingChanged
                                                         object:[text key]
-                                                      userInfo:[NSDictionary dictionaryWithObject:[text text]
-                                                                                           forKey:[text key]]];
+                                                      userInfo:@{[text key]: [text text]}];
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField{
